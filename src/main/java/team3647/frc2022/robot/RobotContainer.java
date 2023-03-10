@@ -6,12 +6,9 @@ package team3647.frc2022.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import team3647.frc2022.autonomous.Auto;
-import team3647.frc2022.commands.Move;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import team3647.frc2022.commands.drive;
 import team3647.frc2022.constants.Constants;
 import team3647.frc2022.subsystems.Drivetrain;
