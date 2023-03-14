@@ -4,6 +4,8 @@
 
 package team3647.frc2022.autonomous;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import team3647.frc2022.commands.Move;
 import team3647.frc2022.constants.Constants;
@@ -14,14 +16,13 @@ import team3647.frc2022.subsystems.Drivetrain;
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class Auto extends SequentialCommandGroup {
   /** Creates a new Auto. */
-  Drivetrain m_drive = new Drivetrain(Constants.motorLeft, Constants.motorRight);
-  public Auto() {
+  public Auto(Drivetrain m_drive) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new Move(m_drive, 2, 0.5, 1), 
-      new Move(m_drive, 2, -0.5, -0.5)
+      new Move(m_drive, 0.5, 0.5).withTimeout(2), 
+      new Move(m_drive, -0.5, -0.5).withTimeout(2), 
+      new Move(m_drive, -0.5, 0.5).withTimeout(1)
       );
-    
   }
 }

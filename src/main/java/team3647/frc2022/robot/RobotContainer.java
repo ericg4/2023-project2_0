@@ -6,10 +6,15 @@ package team3647.frc2022.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import team3647.frc2022.autonomous.Auto;
-import team3647.frc2022.commands.drive;
+import team3647.frc2022.commands.Move;
+import team3647.frc2022.commands.Drive;
+import team3647.frc2022.commands.DrivetrainCommands;
 import team3647.frc2022.constants.Constants;
 import team3647.frc2022.subsystems.Drivetrain;
 
@@ -24,10 +29,11 @@ import team3647.frc2022.subsystems.Drivetrain;
  */
 public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
-	private final XboxController MainController = new XboxController(0);
+	private final CommandXboxController mainController = new CommandXboxController(0);
 
-	private final Drivetrain m_drive = new Drivetrain(Constants.motorLeft, Constants.motorRight);
+	public final Drivetrain m_drive = new Drivetrain();
 	private CommandScheduler scheduler = CommandScheduler.getInstance();
+	private final DrivetrainCommands commandsSystem = new DrivetrainCommands(m_drive, mainController);
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -37,10 +43,10 @@ public class RobotContainer {
 		configureButtonBindings();
 
 		this.scheduler.registerSubsystem(m_drive);
-		this.m_drive.setDefaultCommand(new drive(m_drive,MainController::getLeftX, MainController::getLeftY,
-				MainController::getRightX, MainController::getRightY, MainController::getXButtonPressed, 
-				MainController::getYButtonPressed));
-		 
+		this.m_drive.setDefaultCommand(new Drive(m_drive, mainController::getLeftX, mainController::getLeftY,
+				mainController::getRightX, mainController::getRightY, 
+				mainController.a(), mainController.b(), mainController.x(), mainController.y()));
+
 	}
 
 	/**
@@ -52,7 +58,18 @@ public class RobotContainer {
 	 * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
 	 */
 	private void configureButtonBindings() {
+		mainController.a().onTrue(
+				new Move(m_drive, 0.5, 0.5)
+						.until(() -> joystickMoved(mainController))
+						.withTimeout(2));
+		mainController.y().onTrue(DrivetrainCommands.toggleDriveMode());
+	}
 
+	public boolean joystickMoved(CommandXboxController controller) {
+		return Math.abs(controller.getLeftX()) > 0.15 ||
+				Math.abs(controller.getLeftY()) > 0.15 ||
+				Math.abs(controller.getRightX()) > 0.15 ||
+				Math.abs(controller.getRightY()) > 0.15;
 	}
 
 	/**
@@ -60,11 +77,10 @@ public class RobotContainer {
 	 *
 	 * @return the command to run in autonomous
 	 */
-	public SequentialCommandGroup getAutonomousCommand() {
+	public Command getAutonomousCommand() {
 		// An ExampleCommand will run in autonomous
 		// return m_autoCommand;
-		SequentialCommandGroup move = new Auto();
-		return move;
+		return new Auto(m_drive);
 		// return null;
 	}
 }

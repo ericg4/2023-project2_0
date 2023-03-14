@@ -6,6 +6,9 @@ package team3647.frc2022.constants;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+
+import edu.wpi.first.math.util.Units;
 
 //import team3647.frc2022.subsystems.Drivetrain;
 
@@ -22,18 +25,21 @@ public final class Constants {
     public static final int MOTOR_LEFT_ID = 01;
     public static final int MOTOR_RIGHT_ID = 02;
 
-    public static final TalonFX motorLeft = new TalonFX(MOTOR_LEFT_ID);
-    public static final TalonFX motorRight = new TalonFX(MOTOR_RIGHT_ID);
+    public static final double WHEEL_CIRCUMFERENCE_INCHES = 4 * Math.PI;
+    public static final double GEARING = 1/5;
+    public static final double ENCODER_COUNT = 2048;
 
-    //public static final Drivetrain m_drive = new Drivetrain(motorLeft, motorRight);
+    public static final double DRIVE_kP = 0.00044612;
+    public static final double DRIVE_kS = 0.073355;
+    public static final double DRIVE_kV = 1.7502;
+    public static final double DRIVE_kA = 0.19031;
+    public static final double DRIVE_MULTIPLIER = Units.feetToMeters(8);
+
+    public static final double SPEED_COMPENSATION = 0.02;
+
+    public static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
+
 
     public static final int BUTTON_Y = 0;
-    
-
-    static {
-        motorRight.setInverted(true);
-        motorRight.setNeutralMode(kMasterNeutralMode);
-        motorLeft.setNeutralMode(kMasterNeutralMode);
-    }
 
 }

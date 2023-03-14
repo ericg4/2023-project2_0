@@ -7,27 +7,36 @@ package team3647.frc2022.commands;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
-//import team3647.frc2022.constants.Constants;
+import team3647.frc2022.constants.Constants;
 import team3647.frc2022.subsystems.Drivetrain;
 
-public class drive extends CommandBase {
+public class Drive extends CommandBase {
   /** Creates a new drive. */
   DoubleSupplier supLeftX;
   DoubleSupplier supLeftY;
   DoubleSupplier supRightX;
   DoubleSupplier supRightY;
+  BooleanSupplier aButton;
+  BooleanSupplier bButton;
   BooleanSupplier xButton;
   BooleanSupplier yButton;
   Drivetrain m_drive;
-  private boolean driveMode = false;
+  public static boolean driveMode = false;
+  boolean moving = false;
 
-  public drive(Drivetrain m_drive, DoubleSupplier supLeftX, DoubleSupplier supLeftY, DoubleSupplier supRightX, DoubleSupplier supRightY, BooleanSupplier xButton, BooleanSupplier yButton) {
+  public Drive(Drivetrain m_drive, DoubleSupplier supLeftX, DoubleSupplier supLeftY, DoubleSupplier supRightX,
+      DoubleSupplier supRightY, BooleanSupplier aButton, BooleanSupplier bButton, BooleanSupplier xButton,
+      BooleanSupplier yButton) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.supLeftX = supLeftX;
     this.supLeftY = supLeftY;
     this.supRightX = supRightX;
     this.supRightY = supRightY;
+    this.aButton = aButton;
+    this.bButton = bButton;
     this.xButton = xButton;
     this.yButton = yButton;
     this.m_drive = m_drive;
@@ -37,38 +46,33 @@ public class drive extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (xButton.getAsBoolean()) {
-      if (driveMode) {
-        driveMode = false;
-        System.out.println("TankDrive");
-      }
-      else {
-        driveMode = true;
-        System.out.println("ArcadeDrive");
-      }
-    }
-
+    // Driving with sticks
     if (!driveMode) {
       tankDrive();
-    }
-    else {
+    } else {
       arcadeDrive();
     }
   }
 
   public void tankDrive() {
-    m_drive.setLeftMotors(supLeftY.getAsDouble());
-    m_drive.setRightMotors(supRightY.getAsDouble());
+    m_drive.drive(modifyInputs(supLeftY.getAsDouble()),
+        modifyInputs(supRightY.getAsDouble()));
   }
 
   public void arcadeDrive() {
-    m_drive.setLeftMotors(supLeftY.getAsDouble() - supLeftX.getAsDouble());
-    m_drive.setRightMotors(supLeftY.getAsDouble() + supLeftX.getAsDouble());
+    m_drive.drive(modifyInputs(supLeftY.getAsDouble()) - modifyInputs(supRightX.getAsDouble()), 
+      modifyInputs(supLeftY.getAsDouble()) + modifyInputs(supRightX.getAsDouble()));
+  }
+
+  public double modifyInputs(double input) {
+    input = Math.abs(input) > 0.15 ? Math.signum(input) * Math.pow(input, 2) : 0;
+    return input * Constants.DRIVE_MULTIPLIER * Constants.SPEED_COMPENSATION;
   }
 
   // Called once the command ends or is interrupted.
