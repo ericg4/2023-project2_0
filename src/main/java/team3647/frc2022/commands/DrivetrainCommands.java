@@ -6,18 +6,11 @@ package team3647.frc2022.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import team3647.frc2022.subsystems.Drivetrain;
 
 /** Add your docs here. */
 public class DrivetrainCommands {
-    private final Drivetrain m_drive;
-    private final CommandXboxController m_Controller;
 
-    public DrivetrainCommands(Drivetrain m_drive, CommandXboxController m_Controller) {
-        this.m_drive = m_drive;
-        this.m_Controller = m_Controller;
-    }
+    public DrivetrainCommands() {}
 
     public static Command toggleDriveMode() {
         return Commands.runOnce(

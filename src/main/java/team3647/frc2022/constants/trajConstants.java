@@ -6,6 +6,6 @@ package team3647.frc2022.constants;
 
 /** Add your docs here. */
 public class trajConstants {
-    public static final double kMaxSpeedMetersPerSecond = 3;
+    public static final double kMaxSpeedMetersPerSecond = 2.3;
     public static final double kMaxAccelerationMetersPerSecondSquared = 1;
 }

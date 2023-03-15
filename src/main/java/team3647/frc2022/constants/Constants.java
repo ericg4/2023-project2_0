@@ -40,9 +40,7 @@ public final class Constants {
     public static final double DRIVE_kA = 0.19031;
 
     public static final SimpleMotorFeedforward DRIVE_FF = new SimpleMotorFeedforward(DRIVE_kS, DRIVE_kV);
-    public static final double DRIVE_MULTIPLIER = Units.feetToMeters(8);
-
-    public static final double SPEED_COMPENSATION = 1;
+    public static final double DRIVE_MULTIPLIER = 4;
 
     public static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
 

@@ -33,14 +33,12 @@ public class Move extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_drive.drive(-m_lSpeed, -m_rSpeed);
+    m_drive.drive(m_lSpeed, m_rSpeed);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {
-    m_drive.drive(m_lSpeed, m_rSpeed);
-  }
+  public void end(boolean interrupted) {}
 
   // Returns true when the command should end.
   @Override

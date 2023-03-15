@@ -33,7 +33,6 @@ public class Drivetrain extends SubsystemBase {
   DifferentialDriveOdometry odometry;
 
   private static Drivetrain m_drive = new Drivetrain();
-
   public static Drivetrain getInstance() {
     return m_drive;
   }
@@ -60,6 +59,8 @@ public class Drivetrain extends SubsystemBase {
 
     motorLeft = new TalonFX(Constants.MOTOR_LEFT_ID);
     motorRight = new TalonFX(Constants.MOTOR_RIGHT_ID);
+    motorLeft.configFactoryDefault();
+    motorRight.configFactoryDefault();
 
     motorLeft.config_kP(0, Constants.DRIVE_kP);
     motorRight.config_kP(0, Constants.DRIVE_kP);
@@ -84,27 +85,30 @@ public class Drivetrain extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     // odometry.update(getHeading(), );
+    double motorLeftSelectedSensorVel = motorLeft.getSelectedSensorVelocity();
+    double motorRightSelectedSensorVel = motorRight.getSelectedSensorVelocity();
+
+    double motorLeftSelectedSensorPos = motorLeft.getSelectedSensorPosition();
+    double motorRightSelectedSensorPos = motorRight.getSelectedSensorPosition();
 
     SmartDashboard.putNumber("Actual Left Velocity",
-        Conversions.stepsPerDecisecondToMetersPerSecond(motorLeft.getSelectedSensorVelocity()));
+        Conversions.stepsPerDecisecondToMetersPerSecond(motorLeftSelectedSensorVel));
     SmartDashboard.putNumber("Actual Right Velocity",
-        Conversions.stepsPerDecisecondToMetersPerSecond(motorRight.getSelectedSensorVelocity()));
+        Conversions.stepsPerDecisecondToMetersPerSecond(motorRightSelectedSensorVel));
 
     SmartDashboard.putNumber("LeftVel error",
-        leftVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorLeft.getSelectedSensorVelocity()));
+        leftVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorLeftSelectedSensorVel));
     SmartDashboard.putNumber("RightVel error",
-        rightVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorRight.getSelectedSensorVelocity()));
+        rightVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorRightSelectedSensorVel));
 
     motorLeft.set(ControlMode.Velocity, Conversions.metersToSteps(leftVelo), DemandType.ArbitraryFeedForward,
         Constants.DRIVE_FF.calculate(leftVelo) / 12);
     motorRight.set(ControlMode.Velocity, Conversions.metersToSteps(rightVelo), DemandType.ArbitraryFeedForward,
         Constants.DRIVE_FF.calculate(rightVelo) / 12);
 
-    SmartDashboard.putNumber("encoder somthing", motorLeft.getSelectedSensorVelocity());
-
     odometry.update(getHeading(),
-        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
-        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()));
+        Conversions.stepsToMeters(motorLeftSelectedSensorPos),
+        Conversions.stepsToMeters(motorRightSelectedSensorPos));
 
     field.setRobotPose(odometry.getPoseMeters());
 

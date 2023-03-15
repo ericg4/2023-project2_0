@@ -24,7 +24,7 @@ public class Drive extends CommandBase {
   BooleanSupplier xButton;
   BooleanSupplier yButton;
   Drivetrain m_drive;
-  public static boolean driveMode = false;
+  public static boolean driveMode = true;
   boolean moving = false;
 
   public Drive(Drivetrain m_drive, DoubleSupplier supLeftX, DoubleSupplier supLeftY, DoubleSupplier supRightX,
@@ -46,8 +46,7 @@ public class Drive extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -72,7 +71,7 @@ public class Drive extends CommandBase {
 
   public double modifyInputs(double input) {
     input = Math.abs(input) > 0.15 ? Math.signum(input) * Math.pow(input, 2) : 0;
-    return input * Constants.DRIVE_MULTIPLIER * Constants.SPEED_COMPENSATION * -1;
+    return input * Constants.DRIVE_MULTIPLIER * -1;
   }
 
   // Called once the command ends or is interrupted.
