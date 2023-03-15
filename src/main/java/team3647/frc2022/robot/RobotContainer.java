@@ -41,9 +41,9 @@ public class RobotContainer {
 		// Configure the button bindings
 		configureButtonBindings();
 
-		//this.scheduler.registerSubsystem(m_drive);
+		// this.scheduler.registerSubsystem(m_drive);
 		this.m_drive.setDefaultCommand(new Drive(m_drive, mainController::getLeftX, mainController::getLeftY,
-				mainController::getRightX, mainController::getRightY, 
+				mainController::getRightX, mainController::getRightY,
 				mainController.a(), mainController.b(), mainController.x(), mainController.y()));
 
 	}

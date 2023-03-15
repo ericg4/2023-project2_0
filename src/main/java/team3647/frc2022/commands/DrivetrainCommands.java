@@ -21,7 +21,6 @@ public class DrivetrainCommands {
 
     public static Command toggleDriveMode() {
         return Commands.runOnce(
-            () -> Drive.driveMode = !Drive.driveMode
-            );
+                () -> Drive.driveMode = !Drive.driveMode);
     }
 }

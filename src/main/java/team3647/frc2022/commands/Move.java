@@ -15,7 +15,7 @@ public class Move extends CommandBase {
   double m_lSpeed;
   double m_rSpeed;
   Drivetrain m_drive;
-  
+
   public Move(Drivetrain m_drive, double lSpeed, double rSpeed) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.m_lSpeed = lSpeed;
@@ -27,7 +27,8 @@ public class Move extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

@@ -33,12 +33,13 @@ public class Drivetrain extends SubsystemBase {
   DifferentialDriveOdometry odometry;
 
   private static Drivetrain m_drive = new Drivetrain();
+
   public static Drivetrain getInstance() {
     return m_drive;
   }
 
   public Rotation2d getHeading() {
-    return Rotation2d.fromDegrees( -1 * gyro.getAngle());
+    return Rotation2d.fromDegrees(-1 * gyro.getAngle());
   }
 
   public DifferentialDriveWheelSpeeds getSpeeds() {
@@ -52,6 +53,7 @@ public class Drivetrain extends SubsystemBase {
         Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
         Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()), pose);
   }
+
   /** Creates a new Drivetrain. */
   public Drivetrain() {
     gyro = new WPI_PigeonIMU(16);

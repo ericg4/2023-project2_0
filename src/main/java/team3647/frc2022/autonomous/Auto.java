@@ -20,9 +20,8 @@ public class Auto extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new Move(m_drive, 0.5, 0.5).withTimeout(2), 
-      new Move(m_drive, -0.5, -0.5).withTimeout(2), 
-      new Move(m_drive, -0.5, 0.5).withTimeout(1)
-      );
+        new Move(m_drive, 0.5, 0.5).withTimeout(2),
+        new Move(m_drive, -0.5, -0.5).withTimeout(2),
+        new Move(m_drive, -0.5, 0.5).withTimeout(1));
   }
 }

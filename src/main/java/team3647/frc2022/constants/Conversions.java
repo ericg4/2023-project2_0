@@ -10,11 +10,13 @@ import edu.wpi.first.math.util.Units;
 public class Conversions {
 
     public static double metersToSteps(double meters) {
-        return meters / (Units.inchesToMeters(Constants.WHEEL_CIRCUMFERENCE_INCHES) * Constants.GEARING) * Constants.ENCODER_COUNT;
+        return meters / (Units.inchesToMeters(Constants.WHEEL_CIRCUMFERENCE_INCHES) * Constants.GEARING)
+                * Constants.ENCODER_COUNT;
     }
 
     public static double stepsToMeters(double steps) {
-        return steps / Constants.ENCODER_COUNT * Constants.GEARING * Units.inchesToMeters(Constants.WHEEL_CIRCUMFERENCE_INCHES);
+        return steps / Constants.ENCODER_COUNT * Constants.GEARING
+                * Units.inchesToMeters(Constants.WHEEL_CIRCUMFERENCE_INCHES);
     }
 
     public static double stepsPerDecisecondToMetersPerSecond(double steps) {
