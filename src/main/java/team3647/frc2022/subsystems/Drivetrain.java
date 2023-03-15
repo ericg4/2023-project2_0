@@ -9,39 +9,53 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import team3647.frc2022.constants.Constants;
+import team3647.frc2022.constants.Conversions;
 
 public class Drivetrain extends SubsystemBase {
   WPI_PigeonIMU gyro;
-  double speedMultiplier = 0.4;
   private double leftVelo;
   private double rightVelo;
   private TalonFX motorLeft;
   private TalonFX motorRight;
-  
+  private Field2d field;
 
   DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(16));
-  //DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(gyro.getAngle(), );
+  DifferentialDriveOdometry odometry;
+
+  private static Drivetrain m_drive = new Drivetrain();
+  public static Drivetrain getInstance() {
+    return m_drive;
+  }
 
   public Rotation2d getHeading() {
-    return Rotation2d.fromDegrees(gyro.getAngle());
+    return Rotation2d.fromDegrees( -1 * gyro.getAngle());
   }
 
   public DifferentialDriveWheelSpeeds getSpeeds() {
     return new DifferentialDriveWheelSpeeds(
-      
+
     );
   }
 
+  public void resetOdometry(Pose2d pose) {
+    odometry.resetPosition(getHeading(),
+        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
+        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()), pose);
+  }
   /** Creates a new Drivetrain. */
   public Drivetrain() {
+    gyro = new WPI_PigeonIMU(16);
+
     motorLeft = new TalonFX(Constants.MOTOR_LEFT_ID);
     motorRight = new TalonFX(Constants.MOTOR_RIGHT_ID);
 
@@ -53,27 +67,51 @@ public class Drivetrain extends SubsystemBase {
     motorRight.configVoltageCompSaturation(12);
     motorRight.enableVoltageCompensation(true);
 
-    motorRight.setInverted(true);
+    motorLeft.setInverted(true);
     motorRight.setNeutralMode(Constants.kMasterNeutralMode);
     motorLeft.setNeutralMode(Constants.kMasterNeutralMode);
+
+    odometry = new DifferentialDriveOdometry(getHeading(),
+        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
+        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()));
+
+    field = new Field2d();
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    //odometry.update(getHeading(), );
-    double leftFF = Constants.DRIVE_kS * Math.signum(leftVelo) + Constants.DRIVE_kV * leftVelo + Constants.DRIVE_kA * 0;
-    double rightFF = Constants.DRIVE_kS * Math.signum(rightVelo) + Constants.DRIVE_kV * rightVelo + Constants.DRIVE_kA * 0;
+    // odometry.update(getHeading(), );
 
-    motorLeft.set(ControlMode.Velocity, leftVelo, DemandType.ArbitraryFeedForward, leftFF / 12);
-    motorRight.set(ControlMode.Velocity, rightVelo, DemandType.ArbitraryFeedForward, rightFF / 12);
+    SmartDashboard.putNumber("Actual Left Velocity",
+        Conversions.stepsPerDecisecondToMetersPerSecond(motorLeft.getSelectedSensorVelocity()));
+    SmartDashboard.putNumber("Actual Right Velocity",
+        Conversions.stepsPerDecisecondToMetersPerSecond(motorRight.getSelectedSensorVelocity()));
+
+    SmartDashboard.putNumber("LeftVel error",
+        leftVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorLeft.getSelectedSensorVelocity()));
+    SmartDashboard.putNumber("RightVel error",
+        rightVelo - Conversions.stepsPerDecisecondToMetersPerSecond(motorRight.getSelectedSensorVelocity()));
+
+    motorLeft.set(ControlMode.Velocity, Conversions.metersToSteps(leftVelo), DemandType.ArbitraryFeedForward,
+        Constants.DRIVE_FF.calculate(leftVelo) / 12);
+    motorRight.set(ControlMode.Velocity, Conversions.metersToSteps(rightVelo), DemandType.ArbitraryFeedForward,
+        Constants.DRIVE_FF.calculate(rightVelo) / 12);
 
     SmartDashboard.putNumber("encoder somthing", motorLeft.getSelectedSensorVelocity());
+
+    odometry.update(getHeading(),
+        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
+        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()));
+
+    field.setRobotPose(odometry.getPoseMeters());
+
+    SmartDashboard.putData("Odometry", field);
   }
 
   public void drive(double lSpeed, double rSpeed) {
-    this.leftVelo = lSpeed * speedMultiplier;
-    this.rightVelo = rSpeed * speedMultiplier;
+    this.leftVelo = lSpeed;
+    this.rightVelo = rSpeed;
   }
 
   public void stopMotors() {

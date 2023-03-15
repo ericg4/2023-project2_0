@@ -72,7 +72,7 @@ public class Drive extends CommandBase {
 
   public double modifyInputs(double input) {
     input = Math.abs(input) > 0.15 ? Math.signum(input) * Math.pow(input, 2) : 0;
-    return input * Constants.DRIVE_MULTIPLIER * Constants.SPEED_COMPENSATION;
+    return input * Constants.DRIVE_MULTIPLIER * Constants.SPEED_COMPENSATION * -1;
   }
 
   // Called once the command ends or is interrupted.
