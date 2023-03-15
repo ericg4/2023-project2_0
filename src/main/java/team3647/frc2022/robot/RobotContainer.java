@@ -31,7 +31,7 @@ public class RobotContainer {
 	// The robot's subsystems and commands are defined here...
 	private final CommandXboxController mainController = new CommandXboxController(0);
 
-	public final Drivetrain m_drive = new Drivetrain();
+	public final Drivetrain m_drive = Drivetrain.getInstance();
 	private CommandScheduler scheduler = CommandScheduler.getInstance();
 
 	/**
