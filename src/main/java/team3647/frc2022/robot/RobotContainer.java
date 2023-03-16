@@ -4,6 +4,8 @@
 
 package team3647.frc2022.robot;
 
+import com.pathplanner.lib.PathPlanner;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,11 +14,15 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import team3647.frc2022.autonomous.Auto;
+import team3647.frc2022.autonomous.PathPlannerTrajectories;
 import team3647.frc2022.commands.Move;
+import team3647.frc2022.commands.SetLED;
 import team3647.frc2022.commands.Drive;
 import team3647.frc2022.commands.DrivetrainCommands;
 import team3647.frc2022.constants.Constants;
+import team3647.frc2022.subsystems.CANdleSubsystem;
 import team3647.frc2022.subsystems.Drivetrain;
+import team3647.frc2022.subsystems.CANdleSubsystem.AnimationTypes;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -33,6 +39,7 @@ public class RobotContainer {
 
 	public final Drivetrain m_drive = Drivetrain.getInstance();
 	private CommandScheduler scheduler = CommandScheduler.getInstance();
+	public final CANdleSubsystem canSub = CANdleSubsystem.getInstance();
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -46,6 +53,7 @@ public class RobotContainer {
 				mainController::getRightX, mainController::getRightY,
 				mainController.a(), mainController.b(), mainController.x(), mainController.y()));
 
+				this.canSub.setDefaultCommand(new SetLED(AnimationTypes.Rainbow, canSub));
 	}
 
 	/**
@@ -78,8 +86,8 @@ public class RobotContainer {
 	 */
 	public Command getAutonomousCommand() {
 		// An ExampleCommand will run in autonomous
-		// return m_autoCommand;
-		return new Auto(m_drive);
+		return PathPlannerTrajectories.returnAuto(Drivetrain.getInstance());
+		//return new Auto(m_drive);
 		// return null;
 	}
 }

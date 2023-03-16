@@ -9,17 +9,24 @@ import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.PWMTalonFX;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import team3647.frc2022.constants.Constants;
 import team3647.frc2022.constants.Conversions;
+import team3647.lib.LimelightHelpers;
 
 public class Drivetrain extends SubsystemBase {
   WPI_PigeonIMU gyro;
@@ -29,29 +36,8 @@ public class Drivetrain extends SubsystemBase {
   private TalonFX motorRight;
   private Field2d field;
 
-  DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(16));
-  DifferentialDriveOdometry odometry;
-
-  private static Drivetrain m_drive = new Drivetrain();
-  public static Drivetrain getInstance() {
-    return m_drive;
-  }
-
-  public Rotation2d getHeading() {
-    return Rotation2d.fromDegrees(-1 * gyro.getAngle());
-  }
-
-  public DifferentialDriveWheelSpeeds getSpeeds() {
-    return new DifferentialDriveWheelSpeeds(
-
-    );
-  }
-
-  public void resetOdometry(Pose2d pose) {
-    odometry.resetPosition(getHeading(),
-        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
-        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()), pose);
-  }
+  public DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(16));
+  DifferentialDrivePoseEstimator odometry;
 
   /** Creates a new Drivetrain. */
   public Drivetrain() {
@@ -74,9 +60,8 @@ public class Drivetrain extends SubsystemBase {
     motorRight.setNeutralMode(Constants.kMasterNeutralMode);
     motorLeft.setNeutralMode(Constants.kMasterNeutralMode);
 
-    odometry = new DifferentialDriveOdometry(getHeading(),
-        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
-        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()));
+    odometry = new DifferentialDrivePoseEstimator(kinematics, getHeading(), getLeftDist(), getRightDist(),
+        new Pose2d());
 
     field = new Field2d();
   }
@@ -84,16 +69,15 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    // odometry.update(getHeading(), );
     double motorLeftSelectedSensorVel = motorLeft.getSelectedSensorVelocity();
     double motorRightSelectedSensorVel = motorRight.getSelectedSensorVelocity();
 
     double motorLeftSelectedSensorPos = motorLeft.getSelectedSensorPosition();
     double motorRightSelectedSensorPos = motorRight.getSelectedSensorPosition();
 
-    SmartDashboard.putNumber("Actual Left Velocity",
+    SmartDashboard.putNumber("Left Velocity",
         Conversions.stepsPerDecisecondToMetersPerSecond(motorLeftSelectedSensorVel));
-    SmartDashboard.putNumber("Actual Right Velocity",
+    SmartDashboard.putNumber("Right Velocity",
         Conversions.stepsPerDecisecondToMetersPerSecond(motorRightSelectedSensorVel));
 
     SmartDashboard.putNumber("LeftVel error",
@@ -110,9 +94,55 @@ public class Drivetrain extends SubsystemBase {
         Conversions.stepsToMeters(motorLeftSelectedSensorPos),
         Conversions.stepsToMeters(motorRightSelectedSensorPos));
 
-    field.setRobotPose(odometry.getPoseMeters());
+    
+    // Limelight Position Compensation
+    LimelightHelpers.LimelightResults llresults = LimelightHelpers.getLatestResults("limelight-right");
+    double[] botposeBlue = llresults.targetingResults.botpose_wpiblue;
+    double pipelineLatency = llresults.targetingResults.latency_pipeline;
+
+    boolean valid = llresults.targetingResults.targets_Fiducials.length > 0;
+    
+    if (valid) {
+      Pose2d visionPose = new Pose2d(botposeBlue[0], botposeBlue[1], Rotation2d.fromDegrees(botposeBlue[5]));
+
+      odometry.addVisionMeasurement(visionPose, Timer.getFPGATimestamp() - (pipelineLatency * 0.001));
+    }
+    
+
+
+    field.setRobotPose(odometry.getEstimatedPosition());
 
     SmartDashboard.putData("Odometry", field);
+  }
+
+  // ---------- FUNCTIONS ----------
+
+  private static Drivetrain m_drive = new Drivetrain();
+
+  public static Drivetrain getInstance() {
+    return m_drive;
+  }
+
+  public Rotation2d getHeading() {
+    return Rotation2d.fromDegrees(-1 * gyro.getAngle());
+  }
+
+  public double getLeftDist() {
+    return Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition());
+  }
+
+  public double getRightDist() {
+    return Conversions.stepsToMeters(motorRight.getSelectedSensorPosition());
+  }
+
+  public Pose2d getPose() {
+    return odometry.getEstimatedPosition();
+  }
+
+  public void resetOdometry(Pose2d pose) {
+    odometry.resetPosition(getHeading(),
+        Conversions.stepsToMeters(motorLeft.getSelectedSensorPosition()),
+        Conversions.stepsToMeters(motorRight.getSelectedSensorPosition()), pose);
   }
 
   public void drive(double lSpeed, double rSpeed) {
@@ -124,4 +154,10 @@ public class Drivetrain extends SubsystemBase {
     this.leftVelo = 0;
     this.rightVelo = 0;
   }
+
+  // ---------- AUTO ----------
+  public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    return new DifferentialDriveWheelSpeeds(leftVelo, rightVelo);
+  }
+
 }

@@ -45,5 +45,6 @@ public final class Constants {
     public static final WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
 
     public static final int BUTTON_Y = 0;
+    public static final int CANdleID = 4;
 
 }
