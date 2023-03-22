@@ -10,57 +10,94 @@ import java.util.List;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import com.pathplanner.lib.auto.RamseteAutoBuilder;
 
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import team3647.frc2022.commands.SetLED;
 import team3647.frc2022.constants.Constants;
 import team3647.frc2022.constants.trajConstants;
 import team3647.frc2022.subsystems.CANdleSubsystem;
 import team3647.frc2022.subsystems.Drivetrain;
 import team3647.frc2022.subsystems.CANdleSubsystem.AnimationTypes;
+import team3647.lib.PPRamseteCommand;
 
 /** Add your docs here. */
 public class PathPlannerTrajectories {
-    static RamseteController ramseteController = new RamseteController(trajConstants.kRamseteB,
-            trajConstants.kRamseteZeta);
+        static RamseteController ramseteController = new RamseteController(trajConstants.kRamseteB,
+                        trajConstants.kRamseteZeta);
+        public static HashMap<String, Command> eventMap = trajConstants.eventMap;
 
-    public PathPlannerTrajectories() {
-    }
+        public PathPlannerTrajectories() {
+        }
 
-    public static final PathPlannerTrajectory auto1 = PathPlanner.loadPath("Auto1",
-            trajConstants.kMaxSpeedMetersPerSecond, trajConstants.kMaxAccelerationMetersPerSecondSquared);
-    public static final Pose2d startState1 = auto1.getInitialPose();
+        public static enum AutoChoice {
+                // AutoList
+                AUTO1("Auto1");
 
-    public static Command returnAuto(Drivetrain driveObject) {
-        // This will load the file "FullAuto.path" and generate it with a max velocity
-        // of 4 m/s and a max acceleration of 3 m/s^2
-        // for every path in the group
-        List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("Auto1",
-                trajConstants.kMaxSpeedMetersPerSecond, trajConstants.kMaxAccelerationMetersPerSecondSquared);
+                private String autoName;
 
-        // This is just an example event map. It would be better to have a constant,
-        // global event map
-        // in your code that will be used by all path following commands.
-        HashMap<String, Command> eventMap = new HashMap<>();
-        eventMap.put("marker1", new PrintCommand("Passed marker 1"));
-        eventMap.put("set LED Fire", new SetLED(AnimationTypes.Fire, CANdleSubsystem.getInstance()));
-        eventMap.put("set LED RgbFade", new SetLED(AnimationTypes.RgbFade, CANdleSubsystem.getInstance()));
-        eventMap.put("set LED ColorFlow", new SetLED(AnimationTypes.ColorFlow, CANdleSubsystem.getInstance()));
+                // Constructor
+                private AutoChoice(String autoName) {
+                        this.autoName = autoName;
+                }
 
-        // Create the AutoBuilder. This only needs to be created once when robot code
-        // starts, not every time you want to create an auto command. A good place to
-        // put this is in RobotContainer along with your subsystems.
+                // Call trajectory
+                private List<PathPlannerTrajectory> getautoTrajectory() {
 
-        RamseteAutoBuilder autoBuilder = new RamseteAutoBuilder(driveObject::getPose, driveObject::resetOdometry,
-                ramseteController, driveObject.kinematics, driveObject::drive, eventMap, true, driveObject);
+                        return PathPlanner.loadPathGroup(autoName,
+                                        trajConstants.typicalPathConstraints);
+                }
 
-        Command fullAuto = autoBuilder.fullAuto(pathGroup);
+        }
 
-        return fullAuto;
+        public static Command returnAuto(Drivetrain driveObject, AutoChoice auto) {
 
-    }
+                // This will load the file "FullAuto.path" and generate it with a max velocity
+                // of 4 m/s and a max acceleration of 3 m/s^2
+                // for every path in the group
+                List<PathPlannerTrajectory> pathGroup = auto.getautoTrajectory();
+
+                // Event Map Commands
+                eventMap.put("set LED Fire", new SetLED(AnimationTypes.Fire, CANdleSubsystem.getInstance()));
+                eventMap.put("set LED RgbFade", new SetLED(AnimationTypes.RgbFade, CANdleSubsystem.getInstance()));
+                eventMap.put("set LED ColorFlow", new SetLED(AnimationTypes.ColorFlow, CANdleSubsystem.getInstance()));
+
+                // Create the AutoBuilder. This only needs to be created once when robot code
+                // starts, not every time you want to create an auto command. A good place to
+                // put this is in RobotContainer along with your subsystems.
+
+                RamseteAutoBuilder autoBuilder = new RamseteAutoBuilder(driveObject::getPose,
+                                driveObject::resetOdometry,
+                                ramseteController, driveObject.kinematics, driveObject::drive, eventMap, true,
+                                driveObject);
+
+                Command fullAuto = autoBuilder.fullAuto(pathGroup);
+
+                return fullAuto;
+
+        }
+
+        public static Command onFly(Drivetrain driveObject) {
+                Pose2d startingPose = driveObject.getPose();
+                PathPlannerTrajectory traj1 = PathPlanner.generatePath(
+                                new PathConstraints(3, 1.5),
+                                new PathPoint(startingPose.getTranslation(), startingPose.getRotation()), // position,
+                                                                                                          // heading
+                                new PathPoint(new Translation2d(3.0, 5.0), Rotation2d.fromDegrees(180)) // position,
+                                                                                                       // heading
+                );
+
+                PPRamseteCommand onFlyCommand = new PPRamseteCommand(traj1, driveObject::getPose, ramseteController,
+                                driveObject.kinematics, driveObject::drive, driveObject);
+                
+
+                return onFlyCommand;
+        }
 }

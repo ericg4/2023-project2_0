@@ -13,7 +13,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import team3647.frc2022.autonomous.PathPlannerTrajectories;
+import team3647.frc2022.constants.Constants;
 import team3647.frc2022.subsystems.Drivetrain;
+import team3647.lib.LimelightHelpers;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -39,6 +41,7 @@ public class Robot extends TimedRobot {
 
     PathPlannerServer.startServer(5811);
     Drivetrain.getInstance().resetOdometry(new Pose2d());
+    LimelightHelpers.setPipelineIndex(Constants.LIMELIGHT_NAME, 1);
   }
 
   /**
@@ -68,7 +71,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-    Drivetrain.getInstance().resetOdometry(PathPlannerTrajectories.startState1);
+    // Drivetrain.getInstance().resetOdometry(PathPlannerTrajectories.startState1);
     timer.restart();
 
     // schedule the autonomous command (example)

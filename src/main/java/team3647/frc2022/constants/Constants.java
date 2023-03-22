@@ -46,5 +46,6 @@ public final class Constants {
 
     public static final int BUTTON_Y = 0;
     public static final int CANdleID = 4;
+    public static final String LIMELIGHT_NAME = "limelight-right";
 
 }

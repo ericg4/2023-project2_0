@@ -4,6 +4,8 @@
 
 package team3647.frc2022.constants;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
@@ -21,6 +23,10 @@ public class Conversions {
 
     public static double stepsPerDecisecondToMetersPerSecond(double steps) {
         return stepsToMeters(steps) * 10;
+    }
+
+    public static double getSquaredDistance (Translation2d pose1, Translation2d pose2) {
+        return Math.pow(pose1.getX() - pose2.getX(), 2) + Math.pow(pose1.getY() - pose2.getY(), 2);
     }
 
 }

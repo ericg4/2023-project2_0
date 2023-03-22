@@ -10,14 +10,17 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import team3647.frc2022.autonomous.Auto;
 import team3647.frc2022.autonomous.PathPlannerTrajectories;
+import team3647.frc2022.autonomous.PathPlannerTrajectories.AutoChoice;
 import team3647.frc2022.commands.Move;
 import team3647.frc2022.commands.SetLED;
 import team3647.frc2022.commands.Drive;
+import team3647.frc2022.commands.DriveToPoint;
 import team3647.frc2022.commands.DrivetrainCommands;
 import team3647.frc2022.constants.Constants;
 import team3647.frc2022.subsystems.CANdleSubsystem;
@@ -53,7 +56,7 @@ public class RobotContainer {
 				mainController::getRightX, mainController::getRightY,
 				mainController.a(), mainController.b(), mainController.x(), mainController.y()));
 
-				this.canSub.setDefaultCommand(new SetLED(AnimationTypes.Rainbow, canSub));
+		this.canSub.setDefaultCommand(new SetLED(AnimationTypes.Rainbow, canSub));
 	}
 
 	/**
@@ -70,6 +73,12 @@ public class RobotContainer {
 						.until(() -> joystickMoved(mainController))
 						.withTimeout(2));
 		mainController.y().onTrue(DrivetrainCommands.toggleDriveMode());
+
+		mainController.x().onTrue(new DriveToPoint(m_drive).until(() -> joystickMoved(mainController)));
+
+		mainController.button(8).onTrue(new InstantCommand( () -> {
+			m_drive.setPoseToVision();
+		}));
 	}
 
 	public boolean joystickMoved(CommandXboxController controller) {
@@ -86,8 +95,8 @@ public class RobotContainer {
 	 */
 	public Command getAutonomousCommand() {
 		// An ExampleCommand will run in autonomous
-		return PathPlannerTrajectories.returnAuto(Drivetrain.getInstance());
-		//return new Auto(m_drive);
+		return PathPlannerTrajectories.returnAuto(m_drive, AutoChoice.AUTO1);
+		// return new Auto(m_drive);
 		// return null;
 	}
 }
