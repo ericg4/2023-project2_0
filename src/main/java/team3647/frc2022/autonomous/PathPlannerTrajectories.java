@@ -30,8 +30,7 @@ import team3647.lib.PPRamseteCommand;
 
 /** Add your docs here. */
 public class PathPlannerTrajectories {
-        static RamseteController ramseteController = new RamseteController(trajConstants.kRamseteB,
-                        trajConstants.kRamseteZeta);
+        static RamseteController ramseteController = trajConstants.ramseteController;
         public static HashMap<String, Command> eventMap = trajConstants.eventMap;
 
         public PathPlannerTrajectories() {
@@ -82,22 +81,5 @@ public class PathPlannerTrajectories {
 
                 return fullAuto;
 
-        }
-
-        public static Command onFly(Drivetrain driveObject) {
-                Pose2d startingPose = driveObject.getPose();
-                PathPlannerTrajectory traj1 = PathPlanner.generatePath(
-                                new PathConstraints(3, 1.5),
-                                new PathPoint(startingPose.getTranslation(), startingPose.getRotation()), // position,
-                                                                                                          // heading
-                                new PathPoint(new Translation2d(3.0, 5.0), Rotation2d.fromDegrees(180)) // position,
-                                                                                                       // heading
-                );
-
-                PPRamseteCommand onFlyCommand = new PPRamseteCommand(traj1, driveObject::getPose, ramseteController,
-                                driveObject.kinematics, driveObject::drive, driveObject);
-                
-
-                return onFlyCommand;
         }
 }

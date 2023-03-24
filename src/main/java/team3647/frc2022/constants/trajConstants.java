@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import com.pathplanner.lib.PathConstraints;
 
+import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.wpilibj2.command.Command;
 
 /** Add your docs here. */
@@ -20,6 +21,8 @@ public class trajConstants {
     public static PathConstraints typicalPathConstraints = new PathConstraints(kMaxSpeedMetersPerSecond,
             kMaxAccelerationMetersPerSecondSquared);
 
+    public static RamseteController ramseteController = new RamseteController(trajConstants.kRamseteB,
+            trajConstants.kRamseteZeta);
     public static HashMap<String, Command> eventMap = new HashMap<>();
 
     public static double autoToleranceSquared = 0.05;

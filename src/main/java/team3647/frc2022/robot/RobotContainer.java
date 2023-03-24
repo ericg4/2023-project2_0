@@ -74,7 +74,7 @@ public class RobotContainer {
 						.withTimeout(2));
 		mainController.y().onTrue(DrivetrainCommands.toggleDriveMode());
 
-		mainController.x().onTrue(new DriveToPoint(m_drive).until(() -> joystickMoved(mainController)));
+		mainController.x().onTrue(new DriveToPoint().until(() -> joystickMoved(mainController)));
 
 		mainController.button(8).onTrue(new InstantCommand( () -> {
 			m_drive.setPoseToVision();
