@@ -6,17 +6,17 @@ package team3647.frc2022.commands;
 
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import team3647.frc2022.subsystems.CANdleSubsystem;
-import team3647.frc2022.subsystems.CANdleSubsystem.AnimationTypes;
+import team3647.frc2022.subsystems.CANdleSubsystem.LEDModes;
 
 public class SetLED extends InstantCommand {
   /** Creates a new SetLED. */
   private CANdleSubsystem candleSub;
-  private AnimationTypes anType;
+  private LEDModes led;
 
-  public SetLED(AnimationTypes anType, CANdleSubsystem candleSub) {
+  public SetLED(LEDModes led, CANdleSubsystem candleSub) {
     // Use addRequirements() here to declare subsystem dependencies.
     this.candleSub = candleSub;
-    this.anType = anType;
+    this.led = led;
 
     addRequirements(candleSub);
   }
@@ -24,6 +24,6 @@ public class SetLED extends InstantCommand {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    candleSub.changeAnimation(anType);
+    //candleSub.currentLEDMode = led;
   }
 }

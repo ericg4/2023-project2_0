@@ -6,6 +6,7 @@ package team3647.frc2022.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import team3647.frc2022.constants.Constants;
+import team3647.frc2022.constants.LEDConstants;
 
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
@@ -31,8 +32,7 @@ public class CANdleSubsystem extends SubsystemBase {
         return candleSub;
     }
 
-    private final int LedCount = 300;
-    private XboxController joystick;
+    private final int LedCount = LEDConstants.LEDCOUNT;
 
     private Animation m_toAnimate = null;
 
@@ -46,20 +46,36 @@ public class CANdleSubsystem extends SubsystemBase {
         Strobe,
         Twinkle,
         TwinkleOff,
-        SetAll
+        NONE
+    }
+    public static enum LEDModes {
+        // LED Modes
+        CUBE("Cube"), 
+        CONE("Cone"), 
+        RAINBOW("Rainbow"), 
+        SCORING("Scoring"),
+        MANUALTEST("ManualTest"),
+        IDLE("Idle"),
+        NONE("None");
+
+        private String ledMode;
+
+        // Constructor
+        private LEDModes(String ledMode) {
+                this.ledMode = ledMode;
+        }
+
+        private String returnLEDState() {
+            return ledMode;
+        }  
+
     }
 
-    private AnimationTypes m_currentAnimation;
-
-    public enum LEDMode {
-        ANIMATION, MANUALTEST, EXTERNAL
-    }
-
-    private LEDMode currentLEDMode = LEDMode.ANIMATION;
+    private LEDModes currentLEDMode = LEDModes.CONE;
 
     public CANdleSubsystem() {
         // this.joystick = joy;
-        changeAnimation(AnimationTypes.SetAll);
+        // changeAnimation(AnimationTypes.SetAll);
         CANdleConfiguration configAll = new CANdleConfiguration();
         configAll.statusLedOffWhenActive = true;
         configAll.disableWhenLOS = false;
@@ -75,80 +91,10 @@ public class CANdleSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("start", 0);
         SmartDashboard.putNumber("end", 8);
 
-    }
+        SmartDashboard.putString("LED State", currentLEDMode.returnLEDState());
 
-    public void incrementAnimation() {
-        switch (m_currentAnimation) {
-            case ColorFlow:
-                changeAnimation(AnimationTypes.Fire);
-                break;
-            case Fire:
-                changeAnimation(AnimationTypes.Larson);
-                break;
-            case Larson:
-                changeAnimation(AnimationTypes.Rainbow);
-                break;
-            case Rainbow:
-                changeAnimation(AnimationTypes.RgbFade);
-                break;
-            case RgbFade:
-                changeAnimation(AnimationTypes.SingleFade);
-                break;
-            case SingleFade:
-                changeAnimation(AnimationTypes.Strobe);
-                break;
-            case Strobe:
-                changeAnimation(AnimationTypes.Twinkle);
-                break;
-            case Twinkle:
-                changeAnimation(AnimationTypes.TwinkleOff);
-                break;
-            case TwinkleOff:
-                changeAnimation(AnimationTypes.ColorFlow);
-                break;
-            case SetAll:
-                changeAnimation(AnimationTypes.ColorFlow);
-                break;
-        }
-    }
+        resetColor(0, LedCount);
 
-    public void decrementAnimation() {
-        switch (m_currentAnimation) {
-            case ColorFlow:
-                changeAnimation(AnimationTypes.TwinkleOff);
-                break;
-            case Fire:
-                changeAnimation(AnimationTypes.ColorFlow);
-                break;
-            case Larson:
-                changeAnimation(AnimationTypes.Fire);
-                break;
-            case Rainbow:
-                changeAnimation(AnimationTypes.Larson);
-                break;
-            case RgbFade:
-                changeAnimation(AnimationTypes.Rainbow);
-                break;
-            case SingleFade:
-                changeAnimation(AnimationTypes.RgbFade);
-                break;
-            case Strobe:
-                changeAnimation(AnimationTypes.SingleFade);
-                break;
-            case Twinkle:
-                changeAnimation(AnimationTypes.Strobe);
-                break;
-            case TwinkleOff:
-                changeAnimation(AnimationTypes.Twinkle);
-                break;
-            case SetAll:
-                changeAnimation(AnimationTypes.ColorFlow);
-                break;
-        }
-    }
-
-    public void setColors() {
-        changeAnimation(AnimationTypes.SetAll);
     }
 
     /* Wrappers so we can access the CANdle from the subsystem */
@@ -185,8 +131,6 @@ public class CANdleSubsystem extends SubsystemBase {
     }
 
     public void changeAnimation(AnimationTypes toChange) {
-        m_currentAnimation = toChange;
-
         switch (toChange) {
             case ColorFlow:
                 m_toAnimate = new ColorFlowAnimation(128, 20, 70, 0, 0.7, LedCount, Direction.Forward);
@@ -207,7 +151,7 @@ public class CANdleSubsystem extends SubsystemBase {
                 m_toAnimate = new SingleFadeAnimation(50, 2, 200, 0, 0.5, LedCount);
                 break;
             case Strobe:
-                m_toAnimate = new StrobeAnimation(240, 10, 180, 0, 98.0 / 256.0, LedCount);
+                m_toAnimate = new StrobeAnimation(0, 255, 0, 0, 50.0 / 256.0, LedCount);
                 break;
             case Twinkle:
                 m_toAnimate = new TwinkleAnimation(30, 70, 60, 0, 0.4, LedCount, TwinklePercent.Percent6);
@@ -215,50 +159,51 @@ public class CANdleSubsystem extends SubsystemBase {
             case TwinkleOff:
                 m_toAnimate = new TwinkleOffAnimation(70, 90, 175, 0, 0.8, LedCount, TwinkleOffPercent.Percent100);
                 break;
-            case SetAll:
+            case NONE:
                 m_toAnimate = null;
                 break;
         }
-        System.out.println("Changed to " + m_currentAnimation.toString());
+        m_candle.animate(m_toAnimate);
     }
 
-    public void setToColor(int[] RGB, int start, int end) {
+    public void setRangeToColor(int[] RGB, int start, int count) {
         int r = RGB[0];
         int g = RGB[1];
         int b = RGB[2];
-        m_candle.setLEDs(r, g, b, 255, start, end);
+        m_candle.setLEDs(r, g, b, 255, start, count);
     }
 
-    public void resetColor(int startPos, int endPos) {
-        m_candle.setLEDs(0, 0, 0, 255, startPos, endPos);
+    public void setToColor(int[] RGB, int pos) {
+        int r = RGB[0];
+        int g = RGB[1];
+        int b = RGB[2];
+        m_candle.setLEDs(r, g, b, 255, pos, 1);
+    }
+
+    public void resetColor(int startPos, int count) {
+        m_candle.setLEDs(0, 0, 0, 255, startPos, count);
+    }
+
+    public void speedColorAdjuster(double speed) {
+        double maxSpeed = 10;
+
+        int numLEDs = (int) (speed / maxSpeed * LedCount);
+
+        for (double i = 0; i < numLEDs; i++) {
+            int[] ledColor = {(255 - (int) (i / LedCount * 255)), 0, ((int) (i / LedCount * 255))};
+            setToColor(ledColor, (int) i);
+        }
     }
 
     @Override
     public void periodic() {
-        switch (currentLEDMode) {
-            // This method will be called once per scheduler run
-            case ANIMATION:
-                if (m_toAnimate == null) {
-
-                } else {
-                    m_candle.animate(m_toAnimate);
-                }
-            case MANUALTEST:
-                int r = (int) SmartDashboard.getNumber("R", 255);
-                int g = (int) SmartDashboard.getNumber("G", 0);
-                int b = (int) SmartDashboard.getNumber("B", 0);
-                int start = (int) SmartDashboard.getNumber("start", 0);
-                int end = (int) SmartDashboard.getNumber("end", 8);
-                int[] rgbVals = { r, g, b };
-
-                setToColor(rgbVals, start, end);
-            case EXTERNAL:
-                break;
-        }
+        SmartDashboard.putString("LED State", currentLEDMode.returnLEDState());
     }
 
     @Override
     public void simulationPeriodic() {
         // This method will be called once per scheduler run during simulation
     }
+
+    // Set Animation Mode Functions
 }

@@ -46,7 +46,7 @@ public class DriveToPoint extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    LEDs.setToColor(variableColor(traj1), 0, 4);
+    LEDs.setRangeToColor(variableColor(traj1), 0, 4);
   }
 
   // Called once the command ends or is interrupted.

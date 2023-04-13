@@ -60,13 +60,13 @@ public class Drive extends CommandBase {
   }
 
   public void tankDrive() {
-    m_drive.drive(modifyInputs(supLeftY.getAsDouble()),
-        modifyInputs(supRightY.getAsDouble()));
+    // m_drive.drive(modifyInputs(supLeftY.getAsDouble()),
+    //     modifyInputs(supRightY.getAsDouble()));
   }
 
   public void arcadeDrive() {
-    m_drive.drive(modifyInputs(supLeftY.getAsDouble()) - modifyInputs(supRightX.getAsDouble()),
-        modifyInputs(supLeftY.getAsDouble()) + modifyInputs(supRightX.getAsDouble()));
+    // m_drive.drive(modifyInputs(supLeftY.getAsDouble()) - modifyInputs(supRightX.getAsDouble()),
+    //     modifyInputs(supLeftY.getAsDouble()) + modifyInputs(supRightX.getAsDouble()));
   }
 
   public double modifyInputs(double input) {

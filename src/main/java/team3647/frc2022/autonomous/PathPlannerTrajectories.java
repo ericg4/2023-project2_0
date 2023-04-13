@@ -26,6 +26,7 @@ import team3647.frc2022.constants.trajConstants;
 import team3647.frc2022.subsystems.CANdleSubsystem;
 import team3647.frc2022.subsystems.Drivetrain;
 import team3647.frc2022.subsystems.CANdleSubsystem.AnimationTypes;
+import team3647.frc2022.subsystems.CANdleSubsystem.LEDModes;
 import team3647.lib.PPRamseteCommand;
 
 /** Add your docs here. */
@@ -64,9 +65,9 @@ public class PathPlannerTrajectories {
                 List<PathPlannerTrajectory> pathGroup = auto.getautoTrajectory();
 
                 // Event Map Commands
-                eventMap.put("set LED Fire", new SetLED(AnimationTypes.Fire, CANdleSubsystem.getInstance()));
-                eventMap.put("set LED RgbFade", new SetLED(AnimationTypes.RgbFade, CANdleSubsystem.getInstance()));
-                eventMap.put("set LED ColorFlow", new SetLED(AnimationTypes.ColorFlow, CANdleSubsystem.getInstance()));
+                // eventMap.put("set LED Fire", new SetLED(LEDModes.CONE, CANdleSubsystem.getInstance()));
+                // eventMap.put("set LED RgbFade", new SetLED(LEDModes.CUBE, CANdleSubsystem.getInstance()));
+                // eventMap.put("set LED ColorFlow", new SetLED(LEDModes.RAINBOW, CANdleSubsystem.getInstance()));
 
                 // Create the AutoBuilder. This only needs to be created once when robot code
                 // starts, not every time you want to create an auto command. A good place to

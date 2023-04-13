@@ -10,7 +10,9 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -23,9 +25,12 @@ import team3647.frc2022.commands.Drive;
 import team3647.frc2022.commands.DriveToPoint;
 import team3647.frc2022.commands.DrivetrainCommands;
 import team3647.frc2022.constants.Constants;
+import team3647.frc2022.constants.LEDConstants;
 import team3647.frc2022.subsystems.CANdleSubsystem;
 import team3647.frc2022.subsystems.Drivetrain;
+import team3647.frc2022.subsystems.LEDSubsystem;
 import team3647.frc2022.subsystems.CANdleSubsystem.AnimationTypes;
+import team3647.frc2022.subsystems.CANdleSubsystem.LEDModes;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -42,7 +47,7 @@ public class RobotContainer {
 
 	public final Drivetrain m_drive = Drivetrain.getInstance();
 	private CommandScheduler scheduler = CommandScheduler.getInstance();
-	public final CANdleSubsystem canSub = CANdleSubsystem.getInstance();
+	public final LEDSubsystem canSub = LEDSubsystem.getInstance();
 
 	/**
 	 * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -56,7 +61,7 @@ public class RobotContainer {
 				mainController::getRightX, mainController::getRightY,
 				mainController.a(), mainController.b(), mainController.x(), mainController.y()));
 
-		this.canSub.setDefaultCommand(new SetLED(AnimationTypes.Rainbow, canSub));
+		//this.canSub.setDefaultCommand(new SetLED(LEDMode.IDLE, canSub));
 	}
 
 	/**
@@ -68,13 +73,37 @@ public class RobotContainer {
 	 * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
 	 */
 	private void configureButtonBindings() {
-		mainController.a().onTrue(
-				new Move(m_drive, 0.5, 0.5)
-						.until(() -> joystickMoved(mainController))
-						.withTimeout(2));
+		// mainController.a().onTrue(
+		// 		new Move(m_drive, 0.5, 0.5)
+		// 				.until(() -> joystickMoved(mainController))
+		// 				.withTimeout(2));
 		mainController.y().onTrue(DrivetrainCommands.toggleDriveMode());
 
-		mainController.x().onTrue(new DriveToPoint().until(() -> joystickMoved(mainController)));
+		// Green Strobing
+		mainController.rightTrigger().toggleOnTrue(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.GREEN_STROBE)));
+		mainController.rightTrigger().toggleOnFalse(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.RAINBOW)));
+
+		// Cone
+		mainController.leftBumper().toggleOnTrue(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.SOLID_YELLOW)));
+		mainController.leftBumper().toggleOnFalse(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.RAINBOW)));
+
+		// Cube
+		mainController.leftTrigger().toggleOnTrue(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.SOLID_PURPLE)));
+		mainController.leftTrigger().toggleOnFalse(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.RAINBOW)));
+
+		// Larson
+		mainController.rightBumper().toggleOnTrue(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.LARSON)));
+		mainController.rightBumper().toggleOnFalse(
+			new InstantCommand(() -> canSub.setAnimation(LEDConstants.RAINBOW)));
+
+		// mainController.x().onTrue(new DriveToPoint().until(() -> joystickMoved(mainController)));
 
 		mainController.button(8).onTrue(new InstantCommand( () -> {
 			m_drive.setPoseToVision();
